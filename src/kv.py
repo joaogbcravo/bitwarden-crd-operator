@@ -37,13 +37,11 @@ def create_kv(secret, secret_json, content_def):
 def create_managed_secret(spec, name, namespace, logger, body, **kwargs):
 
     content_def = body['spec']['content']
-    id = spec.get('id')
     secret_name = spec.get('name')
     secret_namespace = spec.get('namespace')
 
     unlock_bw(logger)
-    logger.info(f"Locking up secret with ID: {id}")
-    secret_json_object = json.loads(get_secret_from_bitwarden(id))
+    secret_json_object = get_secret_from_bitwarden(logger, spec)
 
     api = kubernetes.client.CoreV1Api()
 
@@ -69,7 +67,6 @@ def create_managed_secret(spec, name, namespace, logger, body, **kwargs):
 def update_managed_secret(spec, status, name, namespace, logger, body, **kwargs):
 
     content_def = body['spec']['content']
-    id = spec.get('id')
     old_config = None
     old_secret_name = None
     old_secret_namespace = None
@@ -89,8 +86,7 @@ def update_managed_secret(spec, status, name, namespace, logger, body, **kwargs)
         return
 
     unlock_bw(logger)
-    logger.info(f"Locking up secret with ID: {id}")
-    secret_json_object = json.loads(get_secret_from_bitwarden(id))
+    secret_json_object = get_secret_from_bitwarden(logger, spec)
 
     api = kubernetes.client.CoreV1Api()
 

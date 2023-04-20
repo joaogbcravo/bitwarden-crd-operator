@@ -28,13 +28,11 @@ def create_managed_registry_secret(spec, name, namespace, logger, **kwargs):
     username_ref = spec.get('usernameRef')
     password_ref = spec.get('passwordRef')
     registry = spec.get('registry')
-    id = spec.get('id')
     secret_name = spec.get('name')
     secret_namespace = spec.get('namespace')
 
     unlock_bw(logger)
-    logger.info(f"Locking up secret with ID: {id}")
-    secret_json_object = json.loads(get_secret_from_bitwarden(id))
+    secret_json_object = get_secret_from_bitwarden(logger, spec)
 
     api = kubernetes.client.CoreV1Api()
 
@@ -44,7 +42,7 @@ def create_managed_registry_secret(spec, name, namespace, logger, **kwargs):
     }
     secret = kubernetes.client.V1Secret()
     secret.metadata = kubernetes.client.V1ObjectMeta(name=secret_name, annotations=annotations)
-    secret = create_dockerlogin(logger, secret, secret_json_object, username_ref, password_ref, registry)   
+    secret = create_dockerlogin(logger, secret, secret_json_object, username_ref, password_ref, registry)
 
     obj = api.create_namespaced_secret(
         secret_namespace, secret
@@ -83,8 +81,7 @@ def update_managed_registry_secret(spec, status, name, namespace, logger, body, 
         return
 
     unlock_bw(logger)
-    logger.info(f"Locking up secret with ID: {id}")
-    secret_json_object = json.loads(get_secret_from_bitwarden(id))
+    secret_json_object = get_secret_from_bitwarden(logger, spec)
 
     api = kubernetes.client.CoreV1Api()
 
